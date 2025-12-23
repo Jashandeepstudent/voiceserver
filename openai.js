@@ -46,4 +46,3 @@ Output: {"action":"add","product":"sugar","quantity":4,"unit":"packet"}
   // Parse and return the AI command
   return JSON.parse(response.choices[0].message.content);
 }
-GTNJHULJKNBFVRT5CX
