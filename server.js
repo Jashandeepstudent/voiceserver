@@ -1,26 +1,34 @@
+// server.js
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { parseCommand } from "./openai.js";
+import { handleVoice } from "./openai.js";
 
 dotenv.config();
 
 const app = express();
+const PORT = process.env.PORT || 3000;
+
 app.use(cors());
 app.use(express.json());
 
+// Test endpoint
+app.get("/", (req, res) => {
+  res.send("Voice AI Server is running ✅");
+});
+
+// Voice processing endpoint
 app.post("/voice", async (req, res) => {
+  const { text } = req.body;
+  if (!text) return res.status(400).json({ error: "No text provided" });
+
   try {
-    const { text } = req.body;
-    const cmd = await parseCommand(text);
+    const cmd = await handleVoice(text);
     res.json(cmd);
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: "AI parse failed" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
-app.get("/", (_, res) => res.send("AI Voice Server Running"));
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("Server running on port", PORT));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
