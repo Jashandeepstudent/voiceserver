@@ -1,40 +1,39 @@
+// openai.js
 import OpenAI from "openai";
 
-const openai = new OpenAI({
+const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
-export async function parseCommand(text){
-  const completion = await openai.chat.completions.create({
+export async function handleVoice(text) {
+  const response = await client.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [
       {
         role: "system",
         content: `
-You are an inventory voice assistant.
-Return ONLY valid JSON.
-
-Actions:
-- add
-- increase
-- decrease
-- remove
-
-JSON format:
+You are an inventory command parser.
+User may speak Hindi, English, or Hinglish.
+Detect:
+- action: add | increase | decrease | remove
+- product name
+- quantity (number)
+- unit (kg, g, litre, ml, pcs, packet, dozen)
+Rules:
+- If unit not spoken, use "pcs"
+- Hindi units mapping: kilo=kg, litre=litre, gram=g, piece=pcs, etc.
+Return ONLY JSON like:
 {
-  "action": "add|increase|decrease|remove",
-  "product": "string",
-  "quantity": number,
-  "unit": "kg|g|ltr|pcs"
-}
-
-Support Hindi + English.
-`
+ "action":"increase",
+ "product":"rice",
+ "quantity":2,
+ "unit":"kg"
+}`
       },
       { role: "user", content: text }
-    ],
-    temperature: 0.2
+    ]
   });
 
-  return JSON.parse(completion.choices[0].message.content);
+  // Parse and return the AI command
+  return JSON.parse(response.choices[0].message.content);
 }
